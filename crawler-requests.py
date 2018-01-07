@@ -6,11 +6,36 @@ entry = 'https://www.yahoo.co.jp/'
 # entry = 'http://www.celm.co.jp/interview/amazon/'
 # entry = 'https://www.wikipedia.org/'
 
+def timerWrapper(timeout):
+	def decorator(func):
+		def wrapper(*args=(), **kwargs={}):
+			class FuncThreading(threading.Thread):
+				def __init__(self):
+					threading.Thread.init(self)
+				def run(self):
+					self.ret = func(*args, **kwargs)
+				def _stop(self):
+					if self.isActive():
+						threading.Thread._Thread__stop(self)
+			it = FuncThread()
+			it.start()
+			it.join(timeout)
+			if it.isActive():
+				it._stop()
+				print " Time out! "
+				raise Exception()
+			else:
+				return it.ret
+		return wrapper
 
 class Scrawler:
 	def __init__(self):
 		self.visited = {}
 		self.que = Queue()
+	
+	@timerWrapper(1)
+	def rget(link):
+		return requests.get(link)
 	
 	def dfs(self, link):
 		if link == None or link in self.visited:
@@ -18,7 +43,7 @@ class Scrawler:
 		print "{} || ".format(len(self.visited)) + link
 		try:
 			self.visited[link] = True
-			resp = requests.get(link)
+			resp = rget(link)
 			soup = bs(rest.text, 'html.parser')
 			tags = soup.find_all('a')
 		except:
@@ -35,7 +60,7 @@ class Scrawler:
 				if cur == None or cur in self.visited:
 					continue
 				self.visited[cur] = True
-				resp = requests.get(cur)
+				resp = rget(cur)
 				soup = bs(resp.text, 'html.parser')
 				print "{} || ".format(len(self.visited)) + cur
 				tags = soup.find_all('a')
