@@ -8,33 +8,34 @@ entry = 'https://www.yahoo.co.jp/'
 
 def timerWrapper(timeout):
 	def decorator(func):
-		def wrapper(*args=(), **kwargs={}):
-			class FuncThreading(threading.Thread):
+		def wrapper(*args):
+			class FuncThread(threading.Thread):
 				def __init__(self):
-					threading.Thread.init(self)
+					threading.Thread.__init__(self)
+					self.ret = None
 				def run(self):
-					self.ret = func(*args, **kwargs)
+					self.ret = func(*args)
 				def _stop(self):
-					if self.isActive():
+					if self.isAlive():
 						threading.Thread._Thread__stop(self)
 			it = FuncThread()
 			it.start()
 			it.join(timeout)
-			if it.isActive():
+			if it.isAlive():
 				it._stop()
-				print " Time out! "
-				raise Exception()
+				raise Exception(" Time out! {}".format(args[1]))
 			else:
 				return it.ret
 		return wrapper
+	return decorator
 
 class Scrawler:
 	def __init__(self):
 		self.visited = {}
 		self.que = Queue()
 	
-	@timerWrapper(1)
-	def rget(link):
+	@timerWrapper(10)
+	def rget(self, link):
 		return requests.get(link)
 	
 	def dfs(self, link):
@@ -43,10 +44,11 @@ class Scrawler:
 		print "{} || ".format(len(self.visited)) + link
 		try:
 			self.visited[link] = True
-			resp = rget(link)
-			soup = bs(rest.text, 'html.parser')
+			resp = self.rget(link)
+			soup = bs(resp.text, 'html.parser')
 			tags = soup.find_all('a')
-		except:
+		except Exception as e:
+			print e
 			return
 		for tag in tags:
 			next = tag.get('href', None)
@@ -60,7 +62,7 @@ class Scrawler:
 				if cur == None or cur in self.visited:
 					continue
 				self.visited[cur] = True
-				resp = rget(cur)
+				resp = self.rget(cur)
 				soup = bs(resp.text, 'html.parser')
 				print "{} || ".format(len(self.visited)) + cur
 				tags = soup.find_all('a')
@@ -68,8 +70,10 @@ class Scrawler:
 					next = tag.get('href', None)
 					if next not in self.visited:
 						self.que.put(next)
-			except:
+			except Exception as e:
+				print e
 				continue
 
-scw = Scrawler()
-scw.bfs(entry)
+if __name__ == "__main__":
+	scw = Scrawler()
+	scw.bfs(entry)
