@@ -2,10 +2,6 @@ import requests
 from bs4 import BeautifulSoup as bs
 from Queue import Queue
 import threading
-# entry = 'https://www.yahoo.co.jp/'
-# entry = 'http://www.celm.co.jp/interview/amazon/'
-# entry = 'https://www.wikipedia.org/'
-entry = input(" input the entry url: ")
 
 def timerWrapper(timeout):
 	def decorator(func):
@@ -76,5 +72,9 @@ class Scrawler:
 				continue
 
 if __name__ == "__main__":
+	# entry = 'https://www.yahoo.co.jp/'
+	# entry = 'http://www.celm.co.jp/interview/amazon/'
+	# entry = 'https://www.wikipedia.org/'
+	entry = input(" input the entry url: ")
 	scw = Scrawler()
 	scw.bfs(entry)
