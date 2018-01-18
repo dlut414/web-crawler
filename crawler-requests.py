@@ -75,6 +75,6 @@ if __name__ == "__main__":
 	# entry = 'https://www.yahoo.co.jp/'
 	# entry = 'http://www.celm.co.jp/interview/amazon/'
 	# entry = 'https://www.wikipedia.org/'
-	entry = input(" input the entry url: ")
+	entry = raw_input(" input the entry url: ")
 	scw = Scrawler()
 	scw.bfs(entry)
